@@ -65,15 +65,19 @@ find_package(Vala REQUIRED)
 #   useful to include freshly created vala libraries without having to install
 #   them in the system.
 #
-# GENERATE_VAPI
-#   Pass all the needed flags to the compiler to create an internal vapi for
+# GENERATE_VAPI [INTERNAL]
+#   Pass all the needed flags to the compiler to create a vapi for
 #   the compiled library. The provided name will be used for this and a
-#   <provided_name>.vapi file will be created.
-# 
-# GENERATE_HEADER
+#   <provided_name>.vapi file will be created. If INTERNAL is specified,
+#   an internal vapi <provided_name>_internal.vapi will be created as well.
+#   This option implies GENERATE_HEADER, so there is not need use GENERATE_HEADER
+#   in addition to GENERATE_VAPI unless they require different names.
+#
+# GENERATE_HEADER [INTERNAL]
 #   Let the compiler generate a header file for the compiled code. There will
-#   be a header file as well as an internal header file being generated called
-#   <provided_name>.h and <provided_name>_internal.h
+#   be a header file being generated called <provided_name>.h. If INTERNAL
+#   is specified, an internal header <provided_name>_internal.h will be created
+#   as well.
 #
 # GENERATE_GIR
 #   Have the compiler generate a GObject-Introspection repository file with
@@ -167,21 +171,35 @@ macro(vala_precompile output target_name)
 
     set(vapi_arguments "")
     if(ARGS_GENERATE_VAPI)
-        list(APPEND out_files "${DIRECTORY}/${ARGS_GENERATE_VAPI}.vapi")
-        list(APPEND out_files_display "${ARGS_GENERATE_VAPI}.vapi")
-        set(vapi_arguments "--library=${ARGS_GENERATE_VAPI}" "--vapi=${ARGS_GENERATE_VAPI}.vapi")
+        parse_arguments(ARGS_GENERATE_VAPI "" "INTERNAL" ${ARGS_GENERATE_VAPI})
+        list(APPEND out_files "${DIRECTORY}/${ARGS_GENERATE_VAPI_DEFAULT_ARGS}.vapi")
+        list(APPEND out_files_display "${ARGS_GENERATE_VAPI_DEFAULT_ARGS}.vapi")
+        set(vapi_arguments "--library=${ARGS_GENERATE_VAPI_DEFAULT_ARGS}" "--vapi=${ARGS_GENERATE_VAPI_DEFAULT_ARGS}.vapi")
 
         # Header and internal header is needed to generate internal vapi
         if (NOT ARGS_GENERATE_HEADER)
-            set(ARGS_GENERATE_HEADER ${ARGS_GENERATE_VAPI})
+            set(ARGS_GENERATE_HEADER ${ARGS_GENERATE_VAPI_DEFAULT_ARGS})
         endif(NOT ARGS_GENERATE_HEADER)
+
+        if(ARGS_GENERATE_VAPI_INTERNAL)
+            list(APPEND out_files "${DIRECTORY}/${ARGS_GENERATE_VAPI_DEFAULT_ARGS}_internal.vapi")
+            list(APPEND out_files_display "${ARGS_GENERATE_VAPI_DEFAULT_ARGS}_internal.vapi")
+            list(APPEND vapi_arguments "--internal-vapi=${ARGS_GENERATE_VAPI_DEFAULT_ARGS}_internal.vapi")
+            list(APPEND ARGS_GENERATE_HEADER "INTERNAL")
+        endif(ARGS_GENERATE_VAPI_INTERNAL)
     endif(ARGS_GENERATE_VAPI)
 
     set(header_arguments "")
     if(ARGS_GENERATE_HEADER)
-        list(APPEND out_files "${DIRECTORY}/${ARGS_GENERATE_HEADER}.h")
-        list(APPEND out_files_display "${ARGS_GENERATE_HEADER}.h")
-        list(APPEND header_arguments "--header=${ARGS_GENERATE_HEADER}.h")
+        parse_arguments(ARGS_GENERATE_HEADER "" "INTERNAL" ${ARGS_GENERATE_HEADER})
+        list(APPEND out_files "${DIRECTORY}/${ARGS_GENERATE_HEADER_DEFAULT_ARGS}.h")
+        list(APPEND out_files_display "${ARGS_GENERATE_HEADER_DEFAULT_ARGS}.h")
+        list(APPEND header_arguments "--header=${ARGS_GENERATE_HEADER_DEFAULT_ARGS}.h")
+        if(ARGS_GENERATE_HEADER_INTERNAL)
+        list(APPEND out_files "${DIRECTORY}/${ARGS_GENERATE_HEADER_DEFAULT_ARGS}_internal.h")
+        list(APPEND out_files_display "${ARGS_GENERATE_HEADER_DEFAULT_ARGS}_internal.h")
+            list(APPEND header_arguments "--internal-header=${ARGS_GENERATE_HEADER_DEFAULT_ARGS}_internal.h")
+        endif(ARGS_GENERATE_HEADER_INTERNAL)
     endif(ARGS_GENERATE_HEADER)
 
     set(gir_arguments "")
