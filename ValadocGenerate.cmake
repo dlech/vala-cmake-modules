@@ -87,9 +87,9 @@ find_package(Valadoc REQUIRED)
 #   )
 ##
 
-macro(generate_valadoc library_name)
+macro(generate_valadoc)
     parse_arguments(ARGS
-        "TARGET;PACKAGE_NAME;PACKAGE_VERSION;PACKAGES;OPTIONS"
+        "TARGET;OUTPUT_DIRECTORY;PACKAGE_NAME;PACKAGE_VERSION;PACKAGES;OPTIONS"
         "NO_PROTECTED;INTERNAL;PRIVATE"
         ${ARGN}
     )
@@ -109,7 +109,7 @@ macro(generate_valadoc library_name)
     endif(ARGS_PACKAGE_VERSION)
     set(valadoc_pkg_opts "")
     foreach(pkg ${ARGS_PACKAGES})
-        list(APPEND vala_pkg_opts "--pkg=${pkg}")
+        list(APPEND valadoc_pkg_opts "--pkg=${pkg}")
     endforeach(pkg ${ARGS_PACKAGES})
     if(ARGS_NO_PROTECTED)
         set(${valadoc_no_protected_arg} "--no-protected")
@@ -133,10 +133,12 @@ macro(generate_valadoc library_name)
         ${valadoc_no_protected_arg}
         ${valadoc_internal_arg}
         ${valadoc_private_arg}
-        ${ARGS_DEFAULTS}
+        ${ARGS_DEFAULT_ARGS}
+    WORKING_DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}
     DEPENDS
         ${valadoc_clean_target}
-        ${ARGS_DEFAULTS}
+        ${ARGS_DEFAULT_ARGS}
     COMMENT
         "Generating valadoc in ${ARGS_OUTPUT_DIRECTORY}"
     )
