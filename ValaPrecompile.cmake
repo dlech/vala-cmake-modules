@@ -40,8 +40,8 @@ find_package(Vala REQUIRED)
 # 
 # The first parameter provided is a variable, which will be filled with a list
 # of c files outputted by the vala compiler. This list can than be used in
-# conjuction with functions like "add_executable" or others to create the
-# neccessary compile rules with CMake.
+# conjunction with functions like "add_executable" or others to create the
+# necessary compile rules with CMake.
 # 
 # The initial variable is followed by a list of .vala files to be compiled.
 # Please take care to add every vala file belonging to the currently compiled
@@ -50,6 +50,9 @@ find_package(Vala REQUIRED)
 # 
 # The following sections may be specified afterwards to provide certain options
 # to the vala compiler:
+#
+# LIBRARY
+#   Indicates that this is to be compiled as a library.
 # 
 # PACKAGES
 #   A list of vala packages/libraries to be used during the compile cycle. The
@@ -71,7 +74,8 @@ find_package(Vala REQUIRED)
 #   <provided_name>.vapi file will be created. If INTERNAL is specified,
 #   an internal vapi <provided_name>_internal.vapi will be created as well.
 #   This option implies GENERATE_HEADER, so there is not need use GENERATE_HEADER
-#   in addition to GENERATE_VAPI unless they require different names.
+#   in addition to GENERATE_VAPI unless they require different names. Requires
+#   that LIBRARY is set.
 #
 # GENERATE_HEADER [INTERNAL]
 #   Let the compiler generate a header file for the compiled code. There will
@@ -79,10 +83,10 @@ find_package(Vala REQUIRED)
 #   is specified, an internal header <provided_name>_internal.h will be created
 #   as well.
 #
-# GENERATE_GIR
+# GENERATE_GIR [TYPELIB]
 #   Have the compiler generate a GObject-Introspection repository file with
-#   name: <provided_name>.gir. This can be later used to create a binary typelib
-#   using the GI compiler.
+#   name: <provided_name>.gir. If TYPELIB is specified, the compiler will also
+#   create a binary typelib using the GI compiler. Requires that LIBRARY is set.
 #
 # GENERATE_SYMBOLS
 #   Output a <provided_name>.symbols file containing all the exported symbols.
@@ -91,6 +95,7 @@ find_package(Vala REQUIRED)
 # an example to every of the optional sections:
 #
 #   vala_precompile(VALA_C mytargetname
+#   LIBRARY
 #       source1.vala
 #       source2.vala
 #       source3.vala
@@ -108,7 +113,7 @@ find_package(Vala REQUIRED)
 #       myvapi
 #   GENERATE_HEADER
 #       myheader
-#   GENERATE_GIR
+#   GENERATE_GIR TYPELIB
 #       mygir
 #   GENERATE_SYMBOLS
 #       mysymbols
@@ -119,7 +124,9 @@ find_package(Vala REQUIRED)
 ##
 
 macro(vala_precompile output target_name)
-    parse_arguments(ARGS "TARGET;PACKAGES;OPTIONS;DIRECTORY;GENERATE_GIR;GENERATE_SYMBOLS;GENERATE_HEADER;GENERATE_VAPI;CUSTOM_VAPIS" "" ${ARGN})
+    parse_arguments(ARGS
+        "TARGET;PACKAGES;OPTIONS;DIRECTORY;GENERATE_GIR;GENERATE_SYMBOLS;GENERATE_HEADER;GENERATE_VAPI;CUSTOM_VAPIS"
+        "LIBRARY" ${ARGN})
 
     if(ARGS_DIRECTORY)
         set(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${ARGS_DIRECTORY})
@@ -169,12 +176,18 @@ macro(vala_precompile output target_name)
         endforeach(vapi ${ARGS_CUSTOM_VAPIS})
     endif(ARGS_CUSTOM_VAPIS)
 
+    set(library_arguments "")
+    if(ARGS_LIBRARY)
+        list(APPEND library_arguments "--library=${target_name}")
+    endif(ARGS_LIBRARY)
+
     set(vapi_arguments "")
     if(ARGS_GENERATE_VAPI)
         parse_arguments(ARGS_GENERATE_VAPI "" "INTERNAL" ${ARGS_GENERATE_VAPI})
         list(APPEND out_files "${DIRECTORY}/${ARGS_GENERATE_VAPI_DEFAULT_ARGS}.vapi")
         list(APPEND out_files_display "${ARGS_GENERATE_VAPI_DEFAULT_ARGS}.vapi")
-        set(vapi_arguments "--library=${ARGS_GENERATE_VAPI_DEFAULT_ARGS}" "--vapi=${ARGS_GENERATE_VAPI_DEFAULT_ARGS}.vapi")
+        list(APPEND vapi_arguments "--vapi=${ARGS_GENERATE_VAPI_DEFAULT_ARGS}.vapi")
+        list(APPEND vapi_arguments "--vapi-comments")
 
         # Header and internal header is needed to generate internal vapi
         if (NOT ARGS_GENERATE_HEADER)
@@ -205,19 +218,34 @@ macro(vala_precompile output target_name)
     set(gir_arguments "")
     set(gircomp_command "")
     if(ARGS_GENERATE_GIR)
-        list(APPEND out_files "${DIRECTORY}/${ARGS_GENERATE_GIR}.gir")
-        list(APPEND out_files_display "${ARGS_GENERATE_GIR}.gir")
-        set(gir_arguments "--gir=${ARGS_GENERATE_GIR}.gir")
+        parse_arguments(ARGS_GENERATE_GIR "" "TYPELIB" ${ARGS_GENERATE_GIR})
+        list(APPEND out_files "${DIRECTORY}/${ARGS_GENERATE_GIR_DEFAULT_ARGS}.gir")
+        list(APPEND out_files_display "${ARGS_GENERATE_GIR_DEFAULT_ARGS}.gir")
+        list(APPEND gir_arguments "--gir=${ARGS_GENERATE_GIR_DEFAULT_ARGS}.gir")
 
-        include (FindGirCompiler)
-        find_package(GirCompiler REQUIRED)
-        
-        set(gircomp_command 
-            COMMAND 
-                ${G_IR_COMPILER_EXECUTABLE}
-            ARGS 
-                "${DIRECTORY}/${ARGS_GENERATE_GIR}.gir"
-                -o "${DIRECTORY}/${ARGS_GENERATE_GIR}.typelib")
+        if(ARGS_GENERATE_GIR_TYPELIB)
+            include (FindGirCompiler)
+            find_package(GirCompiler REQUIRED)
+
+            add_custom_command(
+                OUTPUT
+                    "${DIRECTORY}/${ARGS_GENERATE_GIR_DEFAULT_ARGS}.typelib"
+                COMMAND
+                    ${G_IR_COMPILER_EXECUTABLE}
+                ARGS
+                    "${DIRECTORY}/${ARGS_GENERATE_GIR_DEFAULT_ARGS}.gir"
+                    "--shared-library=lib${target_name}"
+                    "--output=${DIRECTORY}/${ARGS_GENERATE_GIR_DEFAULT_ARGS}.typelib"
+                DEPENDS
+                    "${DIRECTORY}/${ARGS_GENERATE_GIR_DEFAULT_ARGS}.gir"
+                COMMENT
+                    "Genterating typelib.")
+
+            add_custom_target("${target_name}-typelib"
+                ALL
+                DEPENDS
+                    "${DIRECTORY}/${ARGS_GENERATE_GIR_DEFAULT_ARGS}.typelib")
+        endif(ARGS_GENERATE_GIR_TYPELIB)
     endif(ARGS_GENERATE_GIR)
 
     set(symbols_arguments "")
@@ -239,6 +267,7 @@ macro(vala_precompile output target_name)
     ARGS 
         "-C" 
         ${header_arguments} 
+        ${library_arguments}
         ${vapi_arguments} 
         ${gir_arguments} 
         ${symbols_arguments} 
@@ -258,7 +287,6 @@ macro(vala_precompile output target_name)
         ${ARGS_CUSTOM_VAPIS}
     COMMENT
         "Generating ${out_files_display}"
-    ${gircomp_command}
     )
 
     # This command will be run twice for some reason (pass a non-empty string to COMMENT
