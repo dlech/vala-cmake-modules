@@ -50,6 +50,9 @@ find_package(Valadoc REQUIRED)
 #   package names are exactly the same, as they would be passed to the valadoc
 #   "--pkg=" option.
 #
+# VAPI_DIRECTORIES
+#   A list of other directories to search for package bindings.
+#
 # OPTIONS
 #   A list of optional options to be passed to the valadoc executable.
 #
@@ -79,6 +82,8 @@ find_package(Valadoc REQUIRED)
 #       gtk+-2.0
 #       gio-1.0
 #       posix
+#   VAPI_DIRECTORIES
+#       my-vapi-directory
 #   OPTIONS
 #       --verbose
 #   NO_PROTECTED
@@ -89,7 +94,7 @@ find_package(Valadoc REQUIRED)
 
 macro(generate_valadoc)
     parse_arguments(ARGS
-        "TARGET;OUTPUT_DIRECTORY;PACKAGE_NAME;PACKAGE_VERSION;PACKAGES;OPTIONS"
+        "TARGET;OUTPUT_DIRECTORY;PACKAGE_NAME;PACKAGE_VERSION;PACKAGES;VAPI_DIRECTORIES;OPTIONS"
         "NO_PROTECTED;INTERNAL;PRIVATE"
         ${ARGN}
     )
@@ -111,6 +116,10 @@ macro(generate_valadoc)
     foreach(pkg ${ARGS_PACKAGES})
         list(APPEND valadoc_pkg_opts "--pkg=${pkg}")
     endforeach(pkg ${ARGS_PACKAGES})
+    set(valadoc_vapidir_opts "")
+    foreach(vapi_dir ${ARGS_VAPI_DIRECTORIES})
+        list(APPEND valadoc_vapidir_opts "--vapidir=${vapi_dir}")
+    endforeach(vapi_dir ${ARGS_VAPI_DIRECTORIES})
     if(ARGS_NO_PROTECTED)
         set(${valadoc_no_protected_arg} "--no-protected")
     endif(ARGS_NO_PROTECTED)
@@ -129,6 +138,7 @@ macro(generate_valadoc)
         ${package_name_args}
         ${package_version_args}
         ${valadoc_pkg_opts}
+        ${valadoc_vapidir_opts}
         ${ARGS_OPTIONS}
         ${valadoc_no_protected_arg}
         ${valadoc_internal_arg}
