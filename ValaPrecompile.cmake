@@ -88,6 +88,10 @@ find_package(Vala REQUIRED)
 #   name: <provided_name>.gir. If TYPELIB is specified, the compiler will also
 #   create a binary typelib using the GI compiler. Requires that LIBRARY is set.
 #
+# TYPELIB_OPTIONS
+#   Additional options to pass to the GI compiler. Requires that GENERATE_GIR
+#   TYPELIB is set.
+#
 # GENERATE_SYMBOLS
 #   Output a <provided_name>.symbols file containing all the exported symbols.
 # 
@@ -115,6 +119,8 @@ find_package(Vala REQUIRED)
 #       myheader
 #   GENERATE_GIR TYPELIB
 #       mygir
+#   TYPELIB_OPTIONS
+#       --includedir=some/dir
 #   GENERATE_SYMBOLS
 #       mysymbols
 #   )
@@ -125,7 +131,7 @@ find_package(Vala REQUIRED)
 
 macro(vala_precompile output target_name)
     parse_arguments(ARGS
-        "TARGET;PACKAGES;OPTIONS;DIRECTORY;GENERATE_GIR;GENERATE_SYMBOLS;GENERATE_HEADER;GENERATE_VAPI;CUSTOM_VAPIS"
+        "TARGET;PACKAGES;OPTIONS;TYPELIB_OPTIONS;DIRECTORY;GENERATE_GIR;GENERATE_SYMBOLS;GENERATE_HEADER;GENERATE_VAPI;CUSTOM_VAPIS"
         "LIBRARY" ${ARGN})
 
     if(ARGS_DIRECTORY)
@@ -236,6 +242,7 @@ macro(vala_precompile output target_name)
                     "${DIRECTORY}/${ARGS_GENERATE_GIR_DEFAULT_ARGS}.gir"
                     "--shared-library=lib${target_name}"
                     "--output=${DIRECTORY}/${ARGS_GENERATE_GIR_DEFAULT_ARGS}.typelib"
+                    ${ARGS_TYPELIB_OPTIONS}
                 DEPENDS
                     "${DIRECTORY}/${ARGS_GENERATE_GIR_DEFAULT_ARGS}.gir"
                 COMMENT
