@@ -150,6 +150,14 @@ macro(vala_precompile output target_name)
     set(${output} "")
 
     foreach(src ${ARGS_DEFAULT_ARGS})
+        # this string(REPLACE ...) is a workaround for a strange behavior when
+        # the cmake binary directory is a subdirectory of the source directory
+        # and you include a vala source file from the cmake binary directory.
+        # For a yet to be determined reason, cmake deletes the generated c file
+        # before it is compiled, resulting in an error. We fix this by making
+        # any absolute path that is in the source directory a relative path.
+        string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" src ${src})
+
         string(REGEX MATCH "^/" IS_MATCHED ${src})
         if(${IS_MATCHED} MATCHES "/")
             set(src_file_path ${src})
