@@ -248,7 +248,7 @@ macro(vala_precompile output target_name)
                     ${G_IR_COMPILER_EXECUTABLE}
                 ARGS
                     "${DIRECTORY}/${ARGS_GENERATE_GIR_DEFAULT_ARGS}.gir"
-                    "--shared-library=${target_name}"
+                    "--shared-library=$<TARGET_SONAME_FILE_NAME:${target_name}>"
                     "--output=${DIRECTORY}/${ARGS_GENERATE_GIR_DEFAULT_ARGS}.typelib"
                     ${ARGS_TYPELIB_OPTIONS}
                 DEPENDS
