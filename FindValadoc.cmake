@@ -62,7 +62,7 @@ mark_as_advanced(VALADOC_EXECUTABLE)
 # Determine the valadoc version
 if(VALADOC_FOUND)
     execute_process(COMMAND ${VALADOC_EXECUTABLE} "--version" 
-                    OUTPUT_VARIABLE "VALA_VERSION")
-    string(REPLACE "Valadoc" "" "VALA_VERSION" ${VALA_VERSION})
-    string(STRIP ${VALA_VERSION} "VALA_VERSION")
+                    OUTPUT_VARIABLE "VALADOC_VERSION")
+    string(REPLACE "Valadoc" "" "VALADOC_VERSION" ${VALADOC_VERSION})
+    string(STRIP ${VALADOC_VERSION} "VALADOC_VERSION")
 endif(VALADOC_FOUND)
