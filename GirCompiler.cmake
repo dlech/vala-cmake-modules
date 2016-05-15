@@ -61,10 +61,8 @@
 #   )
 ##
 
-include (ParseArguments)
-
 macro(add_typelib TARGET SHARED_LIBRARY_TARGET GIR_TARGET)
-    parse_arguments(ARGS "ARGS" "" ${ARGN})
+    cmake_parse_arguments (ARGS "" "" "ARGS" ${ARGN})
 
     get_target_property (GIR_FILE_NAME ${GIR_TARGET} GIR_FILE_NAME)
     string (REPLACE ".gir" ".typelib" TYPELIB_FILE_NAME ${GIR_FILE_NAME})

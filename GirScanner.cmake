@@ -68,10 +68,8 @@
 #   )
 ##
 
-include (ParseArguments)
-
 macro(add_gir TARGET SHARED_LIBRARY_TARGET NAMESPACE VERSION)
-    parse_arguments(ARGS "INCLUDES;INCLUDE_DIRS;ARGS;FILES" "" ${ARGN})
+    cmake_parse_arguments (ARGS "" "" "INCLUDES;INCLUDE_DIRS;ARGS;FILES" ${ARGN})
 
     set (GIR_FILE_NAME ${NAMESPACE}-${VERSION}.gir)
     set (TARGET_NAME ${SHARED_LIBRARY_TARGET}-gir)
