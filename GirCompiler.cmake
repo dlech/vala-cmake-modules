@@ -31,9 +31,6 @@
 #   Variable to store the name of the cmake target. The TYPELIB_FILE_NAME
 #   property of this target will be set to the name of the generated file.
 #
-# SHARED_LIBRARY_TARGET
-#   The shared library target that this typelib will be generated from.
-#
 # NAMESPACE
 #   Namespace used in the generated file.
 #
@@ -61,7 +58,7 @@
 #   )
 ##
 
-macro(add_typelib TARGET SHARED_LIBRARY_TARGET GIR_TARGET)
+macro(add_typelib TARGET GIR_TARGET)
     cmake_parse_arguments (ARGS "" "" "ARGS" ${ARGN})
 
     get_target_property (GIR_FILE_NAME ${GIR_TARGET} GIR_FILE_NAME)
@@ -71,12 +68,11 @@ macro(add_typelib TARGET SHARED_LIBRARY_TARGET GIR_TARGET)
     add_custom_command (OUTPUT ${TYPELIB_FILE_NAME}
         COMMAND ${G_IR_COMPILER_EXECUTABLE}
         ARGS
-            --shared-library=$<TARGET_PROPERTY:${SHARED_LIBRARY_TARGET},OUTPUT_NAME>
             --output=${TYPELIB_FILE_NAME}
             ${ARGS_ARGS}
             ${GIR_FILE_NAME}
         DEPENDS
-            ${SHARED_LIBRARY_TARGET}
+            ${GIR_TARGET}
             ${GIR_FILE_NAME}
     )
 
