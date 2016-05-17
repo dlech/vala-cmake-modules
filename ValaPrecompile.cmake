@@ -68,6 +68,9 @@ find_package(Vala REQUIRED)
 #   useful to include freshly created vala libraries without having to install
 #   them in the system.
 #
+# DEPENDS
+#   Additional files that may change the results of the outputed C files.
+#
 # GENERATE_VAPI [INTERNAL]
 #   Pass all the needed flags to the compiler to create a vapi for
 #   the compiled library. The provided name will be used for this and a
@@ -131,7 +134,7 @@ find_package(Vala REQUIRED)
 
 macro(vala_precompile output target_name)
     parse_arguments(ARGS
-        "TARGET;PACKAGES;OPTIONS;TYPELIB_OPTIONS;DIRECTORY;GENERATE_GIR;GENERATE_SYMBOLS;GENERATE_HEADER;GENERATE_VAPI;CUSTOM_VAPIS"
+        "TARGET;PACKAGES;OPTIONS;TYPELIB_OPTIONS;DIRECTORY;GENERATE_GIR;GENERATE_SYMBOLS;GENERATE_HEADER;GENERATE_VAPI;CUSTOM_VAPIS;DEPENDS"
         "LIBRARY" ${ARGN})
 
     if(ARGS_DIRECTORY)
@@ -300,6 +303,7 @@ macro(vala_precompile output target_name)
     DEPENDS 
         ${in_files} 
         ${ARGS_CUSTOM_VAPIS}
+        ${ARGS_DEPENDS}
     COMMENT
         "Generating ${out_files_display}"
     )
