@@ -11,12 +11,14 @@
 #   GTKDOC_SCANGOBJ_EXE     ... the location of the gtkdoc-scangobj executable
 #   GTKDOC_MKDB_EXE         ... the location of the gtkdoc-mkdb executable
 #   GTKDOC_MKHTML_EXE       ... the location of the gtkdoc-mkhtml executable
+#   GTKDOC_REBASE_EXE       ... the location of the gtkdoc-rebase executable
 #   GTKDOC_FIXXREF_EXE      ... the location of the gtkdoc-fixxref executable
 
 
 #=============================================================================
 # Copyright 2009 Rich Wareham
 # Copyright 2015 Lautsprecher Teufel GmbH
+# Copyright 2016 David Lechner <david@lechnology.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,6 +38,7 @@ find_program (GTKDOC_SCAN_EXE NAMES gtkdoc-scan)
 find_program (GTKDOC_SCANGOBJ_EXE NAMES gtkdoc-scangobj)
 find_program (GTKDOC_MKDB_EXE NAMES gtkdoc-mkdb)
 find_program (GTKDOC_MKHTML_EXE NAMES gtkdoc-mkhtml)
+find_program (GTKDOC_REBASE_EXE NAMES gtkdoc-rebase)
 find_program (GTKDOC_FIXXREF_EXE NAMES gtkdoc-fixxref)
 
 include (FindPackageHandleStandardArgs)
@@ -44,6 +47,7 @@ find_package_handle_standard_args (GtkDoc DEFAULT_MSG
     GTKDOC_SCANGOBJ_EXE
     GTKDOC_MKDB_EXE
     GTKDOC_MKHTML_EXE
+    GTKDOC_REBASE_EXE
     GTKDOC_FIXXREF_EXE
 )
 
@@ -53,6 +57,7 @@ mark_as_advanced (GTKDOC_SCAN_EXE)
 mark_as_advanced (GTKDOC_SCANGOBJ_EXE)
 mark_as_advanced (GTKDOC_MKDB_EXE)
 mark_as_advanced (GTKDOC_MKHTML_EXE)
+mark_as_advanced (GTKDOC_REBASE_EXE)
 mark_as_advanced (GTKDOC_FIXXREF_EXE)
 mark_as_advanced (GTKDOC_FOUND)
 
@@ -321,6 +326,10 @@ function(gtk_doc_add_module _doc_prefix)
                 --module=${_doc_prefix}
                 --module-dir=${_output_html_dir}
                 ${_fixxref_opts}
+        COMMAND
+            ${GTKDOC_REBASE_EXE}
+                --online
+                --html-dir=${_output_html_dir}
         COMMENT
             "Generating HTML documentation for ${_doc_prefix} module with gtkdoc-mkhtml"
         VERBATIM)
