@@ -177,6 +177,7 @@ function(gtk_doc_add_module _doc_prefix)
     set(_output_html_dir_stamp "${_output_dir}/html_dir.stamp")
 
     # The output files
+    set(_output_scan_stamp "${_output_dir}/scan.stamp")
     set(_output_decl_list "${_output_dir}/${_doc_prefix}-decl-list.txt")
     set(_output_decl "${_output_dir}/${_doc_prefix}-decl.txt")
     set(_output_overrides "${_output_dir}/${_doc_prefix}-overrides.txt")
@@ -224,6 +225,7 @@ function(gtk_doc_add_module _doc_prefix)
     # add a command to scan the input
     add_custom_command(
         OUTPUT
+            "${_output_scan_stamp}"
             "${_output_decl_list}"
             "${_output_decl}"
             "${_output_overrides}"
@@ -239,6 +241,8 @@ function(gtk_doc_add_module _doc_prefix)
             ${_source_dirs_opt}
             --rebuild-sections
             --rebuild-types
+        COMMAND
+            ${CMAKE_COMMAND} -E touch ${_output_scan_stamp}
         WORKING_DIRECTORY ${_output_dir}
         VERBATIM)
 
