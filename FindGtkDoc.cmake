@@ -61,6 +61,8 @@ mark_as_advanced (GTKDOC_REBASE_EXE)
 mark_as_advanced (GTKDOC_FIXXREF_EXE)
 mark_as_advanced (GTKDOC_FOUND)
 
+find_package (PkgConfig REQUIRED)
+pkg_check_modules (GTKDOC_SCANGOBJ_DEPS REQUIRED gobject-2.0)
 
 include(CMakeParseArguments)
 
@@ -250,14 +252,14 @@ function(gtk_doc_add_module _doc_prefix)
         WORKING_DIRECTORY ${_output_dir}
         VERBATIM)
 
-    foreach(flag ${_extra_cflags})
+    foreach(flag ${_extra_cflags} ${GTKDOC_SCANGOBJ_DEPS_CFLAGS})
         if(_cflags)
             set(_cflags "${_cflags} ")
         endif()
         set(_cflags "${_cflags}${flag}")
     endforeach()
 
-    foreach(flag ${_extra_ldflags})
+    foreach(flag ${_extra_ldflags} ${GTKDOC_SCANGOBJ_DEPS_LDFLAGS})
         if(_ldflags)
             set(_ldflags "${_ldflags} ")
         endif()
