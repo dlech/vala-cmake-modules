@@ -185,6 +185,10 @@ function(gtk_doc_add_module _doc_prefix)
 
     set(_output_scangobj_stamp "${_output_dir}/scangobj.stamp")
     set(_output_signals "${_output_dir}/${_doc_prefix}.signals")
+    set(_output_hierarchy "${_output_dir}/${_doc_prefix}.hierarchy")
+    set(_output_interfaces "${_output_dir}/${_doc_prefix}.interfaces")
+    set(_output_prerequisites "${_output_dir}/${_doc_prefix}.prerequisites")
+    set(_output_args "${_output_dir}/${_doc_prefix}.args")
 
     set(_output_unused "${_output_dir}/${_doc_prefix}-unused.txt")
     set(_output_undeclared "${_output_dir}/${_doc_prefix}-undeclared.txt")
@@ -272,6 +276,10 @@ function(gtk_doc_add_module _doc_prefix)
         OUTPUT
             ${_output_scangobj_stamp}
             ${_output_signals}
+            ${_output_hierarchy}
+            ${_output_interfaces}
+            ${_output_prerequisites}
+            ${_output_args}
         DEPENDS
             ${_output_types}
         COMMAND ${GTKDOC_SCANGOBJ_EXE}
