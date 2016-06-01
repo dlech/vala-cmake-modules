@@ -183,6 +183,7 @@ function(gtk_doc_add_module _doc_prefix)
     set(_output_sections "${_output_dir}/${_doc_prefix}-sections.txt")
     set(_output_types "${_output_dir}/${_doc_prefix}.types")
 
+    set(_output_scangobj_stamp "${_output_dir}/scangobj.stamp")
     set(_output_signals "${_output_dir}/${_doc_prefix}.signals")
 
     set(_output_unused "${_output_dir}/${_doc_prefix}-unused.txt")
@@ -269,6 +270,7 @@ function(gtk_doc_add_module _doc_prefix)
     # add a command to scan the input via gtkdoc-scangobj
     add_custom_command(
         OUTPUT
+            ${_output_scangobj_stamp}
             ${_output_signals}
         DEPENDS
             ${_output_types}
@@ -279,6 +281,8 @@ function(gtk_doc_add_module _doc_prefix)
             "--cflags=${_cflags}"
             "--ldflags=${_ldflags}"
             "--run=LD_LIBRARY_PATH=${_ldpath}"
+        COMMAND
+            ${CMAKE_COMMAND} -E touch ${_output_scangobj_stamp}
         WORKING_DIRECTORY "${_output_dir}"
         VERBATIM)
 
