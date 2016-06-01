@@ -253,6 +253,7 @@ function(gtk_doc_add_module _doc_prefix)
             ${_output_signals}
         DEPENDS
             ${_output_types}
+            ${GTKDOC_SCANGOBJ_WRAPPER}
         COMMAND ${CMAKE_COMMAND}
             -D "GTKDOC_SCANGOBJ_EXE:STRING=${GTKDOC_SCANGOBJ_EXE}"
             -D "doc_prefix:STRING=${_doc_prefix}"
