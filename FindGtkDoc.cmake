@@ -66,7 +66,6 @@ include(CMakeParseArguments)
 
 
 get_filename_component(_this_dir ${CMAKE_CURRENT_LIST_FILE} PATH)
-find_file(GTKDOC_SCANGOBJ_WRAPPER GtkDocScanGObjWrapper.cmake PATH ${_this_dir})
 
 # ::
 #
@@ -246,23 +245,40 @@ function(gtk_doc_add_module _doc_prefix)
         WORKING_DIRECTORY ${_output_dir}
         VERBATIM)
 
+    foreach(flag ${_extra_cflags})
+        if(_cflags)
+            set(_cflags "${_cflags} ")
+        endif()
+        set(_cflags "${_cflags}${flag}")
+    endforeach()
+
+    foreach(flag ${_extra_ldflags})
+        if(_ldflags)
+            set(_ldflags "${_ldflags} ")
+        endif()
+        set(_ldflags "${_ldflags}${flag}")
+    endforeach()
+
+    foreach(path ${_extra_ldpath})
+        if(_ldpath)
+            set(_ldpath "${_ldpath}:")
+        endif()
+        set(_ldpath "${_ldpath}${path}")
+    endforeach()
+
     # add a command to scan the input via gtkdoc-scangobj
-    # This is such a disgusting hack!
     add_custom_command(
         OUTPUT
             ${_output_signals}
         DEPENDS
             ${_output_types}
-            ${GTKDOC_SCANGOBJ_WRAPPER}
-        COMMAND ${CMAKE_COMMAND}
-            -D "GTKDOC_SCANGOBJ_EXE:STRING=${GTKDOC_SCANGOBJ_EXE}"
-            -D "doc_prefix:STRING=${_doc_prefix}"
-            -D "output_types:STRING=${_output_types}"
-            -D "output_dir:STRING=${_output_dir}"
-            -D "EXTRA_CFLAGS:STRING=${_extra_cflags}"
-            -D "EXTRA_LDFLAGS:STRING=${_extra_ldflags}"
-            -D "EXTRA_LDPATH:STRING=${_extra_ldpath}"
-            -P ${GTKDOC_SCANGOBJ_WRAPPER}
+        COMMAND ${GTKDOC_SCANGOBJ_EXE}
+            "--module=${_doc_prefix}"
+            "--types=${_output_types}"
+            "--output-dir=${_output_dir}"
+            "--cflags=${_cflags}"
+            "--ldflags=${_ldflags}"
+            "--run=LD_LIBRARY_PATH=${_ldpath}"
         WORKING_DIRECTORY "${_output_dir}"
         VERBATIM)
 
