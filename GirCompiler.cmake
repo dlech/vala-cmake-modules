@@ -28,8 +28,8 @@
 # add_typelib: CMake wrapper around g-ir-compiler to create .typelib files
 #
 # TARGET
-#   Variable to store the name of the cmake target. The TYPELIB_FILE_NAME
-#   property of this target will be set to the name of the generated file.
+#   The name of the cmake target. The TYPELIB_FILE_NAME property of this target
+#   will be set to the name of the generated file.
 #
 # NAMESPACE
 #   Namespace used in the generated file.
@@ -63,7 +63,6 @@ macro(add_typelib TARGET GIR_TARGET)
 
     get_target_property (GIR_FILE_NAME ${GIR_TARGET} GIR_FILE_NAME)
     string (REPLACE ".gir" ".typelib" TYPELIB_FILE_NAME ${GIR_FILE_NAME})
-    string (REPLACE "-gir" "-typelib" TARGET_NAME ${GIR_TARGET})
 
     add_custom_command (OUTPUT ${TYPELIB_FILE_NAME}
         COMMAND ${G_IR_COMPILER_EXECUTABLE}
@@ -76,9 +75,7 @@ macro(add_typelib TARGET GIR_TARGET)
             ${GIR_FILE_NAME}
     )
 
-    add_custom_target (${TARGET_NAME} ALL DEPENDS ${TYPELIB_FILE_NAME})
-    set_property (TARGET ${TARGET_NAME} PROPERTY TYPELIB_FILE_NAME
+    add_custom_target (${TARGET} ALL DEPENDS ${TYPELIB_FILE_NAME})
+    set_property (TARGET ${TARGET} PROPERTY TYPELIB_FILE_NAME
         ${CMAKE_CURRNET_BINARY_DIR}/${TYPELIB_FILE_NAME})
-
-    set (${TARGET} ${TARGET_NAME})
 endmacro()
