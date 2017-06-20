@@ -66,6 +66,8 @@ pkg_check_modules (GTKDOC_SCANGOBJ_DEPS REQUIRED gobject-2.0)
 
 include(CMakeParseArguments)
 
+option (GTKDOC_REBASE_ONLINE, "Prefer online cross-references when rebasing docs")
+
 
 get_filename_component(_this_dir ${CMAKE_CURRENT_LIST_FILE} PATH)
 
@@ -200,6 +202,13 @@ function(gtk_doc_add_module _doc_prefix)
     set(_output_sgml_stamp "${_output_dir}/sgml.stamp")
 
     set(_output_html_stamp "${_output_dir}/html.stamp")
+
+    if(GTKDOC_REBASE_ONLINE)
+        set(_rebase_online_option "--online")
+    endif(GTKDOC_REBASE_ONLINE)
+    if(DESTDIR)
+        set(_rebase_dest_dir_option, "--dest-dir=${DESTDIR}")
+    endif(DESTDIR)
 
     # add a command to create output directory
     add_custom_command(
@@ -363,8 +372,9 @@ function(gtk_doc_add_module _doc_prefix)
                 ${_fixxref_opts}
         COMMAND
             ${GTKDOC_REBASE_EXE}
-                --online
                 --html-dir=${_output_html_dir}
+                ${_rebase_online_option}
+                ${_rebase_dest_dir_option}
         COMMENT
             "Generating HTML documentation for ${_doc_prefix} module with gtkdoc-mkhtml"
         VERBATIM)
