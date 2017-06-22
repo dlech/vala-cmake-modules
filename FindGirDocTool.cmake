@@ -37,11 +37,13 @@ include (CMakeParseArguments)
 # add_gir_doc (<target-name> <python|gjs|c> GIR_FILE <file.gir> DESTINATION <directory>)
 #
 function (add_gir_doc TARGET LANGUAGE)
-    set (_one_value_args "GIR_FILE" "DESTINATION")
+    set (_one_value_args "GIR_TARGET" "DESTINATION")
     cmake_parse_arguments (GIR_DOC "" "${_one_value_args}" "" "${ARGN}")
 
-    if (NOT GIR_DOC_GIR_FILE)
-        message (FATAL_ERROR "Missing GIR_FILE argument")
+    if (GIR_DOC_GIR_TARGET)
+        set (_gir_file $<TARGET_PROPERTY:${GIR_DOC_GIR_TARGET},GIR_FILE_NAME>)
+    else ()
+        message (FATAL_ERROR "Missing GIR_TARGET argument")
     endif ()
 
     if (NOT GIR_DOC_DESTINATION)
@@ -54,13 +56,14 @@ function (add_gir_doc TARGET LANGUAGE)
         COMMAND ${G_IR_DOC_TOOL_EXE}
             --output ${GIR_DOC_DESTINATION}
             --language ${LANGUAGE}
-            ${GIR_DOC_GIR_FILE}
+            ${_gir_file}
         COMMAND
             ${CMAKE_COMMAND} -E touch ${TARGET}.stamp
         DEPENDS
-            ${GIR_DOC_GIR_FILE}
+            ${_gir_file}
     )
 
     add_custom_target (${TARGET} DEPENDS ${TARGET}.stamp)
+    add_dependencies (${TARGET} ${GIR_DOC_GIR_TARGET})
 
 endfunction ()
