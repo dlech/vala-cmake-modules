@@ -72,7 +72,6 @@ macro(add_gir TARGET SHARED_LIBRARY_TARGET NAMESPACE VERSION)
     cmake_parse_arguments (ARGS "" "" "INCLUDES;INCLUDE_DIRS;ARGS;FILES" ${ARGN})
 
     set (GIR_FILE_NAME ${NAMESPACE}-${VERSION}.gir)
-    set (TARGET_NAME ${SHARED_LIBRARY_TARGET}-gir)
 
     set (INCLUDES "")
     foreach (PKG ${ARGS_INCLUDES})
@@ -109,9 +108,9 @@ macro(add_gir TARGET SHARED_LIBRARY_TARGET NAMESPACE VERSION)
             ${FILES}
     )
 
-    add_custom_target (${TARGET_NAME} ALL DEPENDS ${GIR_FILE_NAME})
-    set_property (TARGET ${TARGET_NAME} PROPERTY GIR_FILE_NAME
+    add_custom_target (${TARGET} ALL DEPENDS ${GIR_FILE_NAME})
+    set_property (TARGET ${TARGET} PROPERTY GIR_FILE_NAME
         ${CMAKE_CURRENT_BINARY_DIR}/${GIR_FILE_NAME})
 
-    set (${TARGET} ${TARGET_NAME})
+    set (${TARGET} ${TARGET})
 endmacro()
