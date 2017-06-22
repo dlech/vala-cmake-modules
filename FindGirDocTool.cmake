@@ -49,6 +49,8 @@ function (add_gir_doc TARGET LANGUAGE)
     endif ()
 
     add_custom_command (OUTPUT ${TARGET}.stamp
+        COMMAND
+            ${CMAKE_COMMAND} -E remove_directory ${GIR_DOC_DESTINATION}
         COMMAND ${G_IR_DOC_TOOL_EXE}
             --output ${GIR_DOC_DESTINATION}
             --language ${LANGUAGE}
