@@ -44,13 +44,23 @@ function (glib_genmarshal)
     set (_multi_value_args "LIST_FILES")
     cmake_parse_arguments ("GLIB_GENMARSHAL" "${_option_args}" "${_one_value_args}" "${_multi_value_args}" ${ARGN})
 
-    if (NOT GLIB_GENMARSHAL_HEADER_FILE)
+    if (GLIB_GENMARSHAL_HEADER_FILE)
+        if (NOT IS_ABSOLUTE "${GLIB_GENMARSHAL_HEADER_FILE}")
+            set (GLIB_GENMARSHAL_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/${GLIB_GENMARSHAL_HEADER_FILE}")
+        endif (NOT IS_ABSOLUTE "${GLIB_GENMARSHAL_HEADER_FILE}")
+        get_filename_component (GLIB_GENMARSHAL_HEADER_DIR "${GLIB_GENMARSHAL_HEADER_FILE}" DIRECTORY)
+    else (GLIB_GENMARSHAL_HEADER_FILE)
         message (FATAL_ERROR "Missing HEADER_FILE argument")
-    endif (NOT GLIB_GENMARSHAL_HEADER_FILE)
+    endif (GLIB_GENMARSHAL_HEADER_FILE)
 
-    if (NOT GLIB_GENMARSHAL_CODE_FILE)
+    if (GLIB_GENMARSHAL_CODE_FILE)
+        if (NOT IS_ABSOLUTE "${GLIB_GENMARSHAL_CODE_FILE}")
+            set (GLIB_GENMARSHAL_CODE_FILE "${CMAKE_CURRENT_BINARY_DIR}/${GLIB_GENMARSHAL_CODE_FILE}")
+        endif (NOT IS_ABSOLUTE "${GLIB_GENMARSHAL_CODE_FILE}")
+        get_filename_component (GLIB_GENMARSHAL_CODE_DIR "${GLIB_GENMARSHAL_CODE_FILE}" DIRECTORY)
+    else (GLIB_GENMARSHAL_CODE_FILE)
         message (FATAL_ERROR "Missing CODE_FILE argument")
-    endif (NOT GLIB_GENMARSHAL_CODE_FILE)
+    endif (GLIB_GENMARSHAL_CODE_FILE)
 
     if (GLIB_GENMARSHAL_LIST_FILES)
         foreach (_file ${GLIB_GENMARSHAL_LIST_FILES})
@@ -89,6 +99,8 @@ function (glib_genmarshal)
     endif (GLIB_GENMARSHAL_STANDARD_INCLUDE)
 
     add_custom_command (OUTPUT ${GLIB_GENMARSHAL_HEADER_FILE}
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+            ${GLIB_GENMARSHAL_HEADER_DIR}
         COMMAND ${GLIB_GENMARSHAL_EXE}
             --header
             ${_prefix_arg}
@@ -102,6 +114,8 @@ function (glib_genmarshal)
     )
 
     add_custom_command (OUTPUT ${GLIB_GENMARSHAL_CODE_FILE}
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+            ${GLIB_GENMARSHAL_CODE_DIR}
         COMMAND ${GLIB_GENMARSHAL_EXE}
             --body
             ${_prefix_arg}
