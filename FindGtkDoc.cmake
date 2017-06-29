@@ -66,7 +66,7 @@ pkg_check_modules (GTKDOC_SCANGOBJ_DEPS REQUIRED gobject-2.0)
 
 include(CMakeParseArguments)
 
-option (GTKDOC_REBASE_ONLINE, "Prefer online cross-references when rebasing docs")
+option (GTKDOC_REBASE_ONLINE "Prefer online cross-references when rebasing docs")
 
 
 get_filename_component(_this_dir ${CMAKE_CURRENT_LIST_FILE} PATH)
