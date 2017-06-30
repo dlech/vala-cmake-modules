@@ -138,7 +138,7 @@ macro(vala_precompile output target_name)
         "LIBRARY" ${ARGN})
 
     if(ARGS_DIRECTORY)
-        set(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${ARGS_DIRECTORY})
+        set(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${ARGS_DIRECTORY})
     else(ARGS_DIRECTORY)
         set(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
     endif(ARGS_DIRECTORY)
