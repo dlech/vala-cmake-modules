@@ -86,7 +86,7 @@ function(vala2c TARGET)
         endforeach()
     endif()
 
-    # optional TARGET_GLIB arguemtn
+    # optional TARGET_GLIB argument
     if(VALA2C_TARGET_GLIB)
         set(targetGLibArg "--target-glib=${VALA2C_TARGET_GLIB}")
     endif()
@@ -96,6 +96,7 @@ function(vala2c TARGET)
             ${pkgArgs}
             --directory="${outputDir}"
             --ccode
+            $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:--debug>
             ${targetGLibArg}
             ${sourceFiles}
         DEPENDS
