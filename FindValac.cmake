@@ -34,13 +34,13 @@ find_package_handle_standard_args(Valac DEFAULT_MSG VALAC_EXE)
 #
 # Usage:
 #
-# vala2c(TARGET SOURCE_FILES <file1> [<file2> ...]
+# vala2c(<target> SOURCE_FILES <file1> [<file2> ...]
 #   [PACKAGES <pkg1> [<pkg2> ...]]
 #   [TARGET_GLIB <major>.<minor>]
 #   [OUTPUT_DIR <dir>]
 # )
 #
-# TARGET is a variable to hold a list of generated C files.
+# <target> is a variable to hold a list of generated C files.
 # SOURCE_FILES is a list of the source (.vala) files.
 # PACKAGES is a list of vala package dependencies (e.g. glib-2.0).
 # TARGET_GLIB is the target glib version.
