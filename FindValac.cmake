@@ -72,6 +72,8 @@ function(vala2c TARGET)
             get_filename_component(cFile "${sourceFile}" NAME_WE)
             set(cFile "${outputDir}/${cFile}.c")
             list(APPEND outputFiles "${cFile}")
+            get_filename_component(sourceFile "${sourceFile}" ABSOLUTE)
+            list(APPEND sourceFiles "${sourceFile}")
         endforeach()
     else()
         message(FATAL_ERROR "Missing SOURCE_FILES argument for vala2c")
@@ -95,9 +97,7 @@ function(vala2c TARGET)
             --directory="${outputDir}"
             --ccode
             ${targetGLibArg}
-            ${VALA2C_SOURCE_FILES}
-        WORKING_DIRECTORY
-            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${sourceFiles}
         DEPENDS
             ${VALA2C_SOURCE_FILES}
     )
