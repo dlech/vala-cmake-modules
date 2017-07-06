@@ -37,7 +37,7 @@ find_package_handle_standard_args(ValaDoc DEFAULT_MSG VALADOC_EXE)
 #
 # Usage:
 #
-# valadoc(<target> PACKAGE_NAME <name> [PACKAGE_VERSION <version>]
+# add_valadoc(<target> PACKAGE_NAME <name> [PACKAGE_VERSION <version>]
 #   SOURCE_FILES <file1> [<file2> ...]
 #   [PACKAGES <pkg1> [<pkg2> ...]]
 # )
@@ -50,7 +50,7 @@ find_package_handle_standard_args(ValaDoc DEFAULT_MSG VALADOC_EXE)
 # OUTPUT_DIR is the location where the generated files will be written. The
 #   default is ${CMAKE_CURRENT_BINARY_DIR}/valadoc
 #
-function(valadoc TARGET)
+function(add_valadoc TARGET)
     set(optionArgs "")
     set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION)
     set(multiValueArgs SOURCE_FILES PACKAGES)
