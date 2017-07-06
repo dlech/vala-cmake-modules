@@ -29,6 +29,9 @@ mark_as_advanced(VALAC_EXE)
 include (FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Valac DEFAULT_MSG VALAC_EXE)
 
+execute_process(COMMAND ${VALAC_EXE} --version OUTPUT_VARIABLE VALAC_VERSION)
+string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" VALAC_VERSION ${VALAC_VERSION})
+
 #
 # vala2c - compile Vala source files into C source files
 #
