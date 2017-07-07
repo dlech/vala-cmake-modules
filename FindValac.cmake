@@ -85,11 +85,9 @@ function(vala2c TARGET)
     endif()
 
     # optional PACKAGES argument
-    if(VALA2C_PACKAGES)
-        foreach(package ${VALA2C_PACKAGES})
-            list(APPEND pkgArgs "--pkg=${package}")
-        endforeach()
-    endif()
+    foreach(package ${VALA2C_PACKAGES})
+        list(APPEND pkgArgs "--pkg=${package}")
+    endforeach()
 
     # optional VAPI_DIRS argument
     foreach(vapiDir ${VALA2C_VAPI_DIRS})
