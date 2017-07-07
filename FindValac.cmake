@@ -39,6 +39,7 @@ string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" VALAC_VERSION ${VALAC_VERSION})
 #
 # vala2c(<target> SOURCE_FILES <file1> [<file2> ...]
 #   [PACKAGES <pkg1> [<pkg2> ...]]
+#   [VAPI_DIRS <dir1> [<dir2> ...]]
 #   [TARGET_GLIB <major>.<minor>]
 #   [OUTPUT_DIR <dir>]
 # )
@@ -46,6 +47,7 @@ string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" VALAC_VERSION ${VALAC_VERSION})
 # <target> is a variable to hold a list of generated C files.
 # SOURCE_FILES is a list of the source (.vala) files.
 # PACKAGES is a list of vala package dependencies (e.g. glib-2.0).
+# VAPI_DIRS is a list of additional vapi search directories
 # TARGET_GLIB is the target glib version.
 # OUTPUT_DIR is the location where the generated files will be written. The
 #   default is ${CMAKE_CURRENT_BINARY_DIR}
@@ -89,21 +91,28 @@ function(vala2c TARGET)
         endforeach()
     endif()
 
+    # optional VAPI_DIRS argument
+    foreach(vapiDir ${VALA2C_VAPI_DIRS})
+        list(APPEND vapiDirArgs "--vapidir=${vapiDir}")
+    endforeach()
+
     # optional TARGET_GLIB argument
     if(VALA2C_TARGET_GLIB)
         set(targetGLibArg "--target-glib=${VALA2C_TARGET_GLIB}")
     endif()
 
     add_custom_command(OUTPUT ${outputFiles}
-        COMMAND "${VALAC_EXE}"
+        COMMAND ${VALAC_EXE}
             ${pkgArgs}
-            --directory="${outputDir}"
+            --directory=${outputDir}
             --ccode
             $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:--debug>
+            ${vapiDirArgs}
             ${targetGLibArg}
             ${sourceFiles}
         DEPENDS
             ${VALA2C_SOURCE_FILES}
+        VERBATIM
     )
 
     set(${TARGET} ${outputFiles} PARENT_SCOPE)
