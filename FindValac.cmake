@@ -99,12 +99,17 @@ function(vala2c TARGET)
         set(targetGLibArg "--target-glib=${VALA2C_TARGET_GLIB}")
     endif()
 
+    # debug argument
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+        set(debugArg "--debug")
+    endif()
+
     add_custom_command(OUTPUT ${outputFiles}
         COMMAND ${VALAC_EXE}
             ${pkgArgs}
             --directory=${outputDir}
             --ccode
-            $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:--debug>
+            ${debugArg}
             ${vapiDirArgs}
             ${targetGLibArg}
             ${sourceFiles}
