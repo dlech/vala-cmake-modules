@@ -40,6 +40,10 @@ find_package_handle_standard_args(ValaDoc DEFAULT_MSG VALADOC_EXE)
 # add_valadoc(<target> PACKAGE_NAME <name> [PACKAGE_VERSION <version>]
 #   SOURCE_FILES <file1> [<file2> ...]
 #   [PACKAGES <pkg1> [<pkg2> ...]]
+#   [OUTPUT_DIR <dir>]
+#   [IMPORT_DIRS <dir1> [<dir2> ...]]
+#   [IMPORTS <NAMESPACE-VERSION> [<NAMESPACE-VERSION> ...]]
+#   [DEPENDS <target1> [<target2> ...]]
 # )
 #
 # <target> is the name of the generated target
@@ -49,11 +53,15 @@ find_package_handle_standard_args(ValaDoc DEFAULT_MSG VALADOC_EXE)
 # PACKAGES is a list of vala package dependencies (e.g. glib-2.0).
 # OUTPUT_DIR is the location where the generated files will be written. The
 #   default is ${CMAKE_CURRENT_BINARY_DIR}/valadoc
+# IMPORT_DIRS is a list of additional search directories for IMPORTS
+# IMPORTS is a list of repositories to import
+# DEPENDS is a list of additional dependencies, such as a .gir file that is
+#   imported with IMPORTS
 #
 function(add_valadoc TARGET)
     set(optionArgs "")
     set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION)
-    set(multiValueArgs SOURCE_FILES PACKAGES)
+    set(multiValueArgs SOURCE_FILES PACKAGES IMPORT_DIRS IMPORTS DEPENDS)
     cmake_parse_arguments(VALADOC "${optionArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     # determine the output directory
@@ -82,11 +90,19 @@ function(add_valadoc TARGET)
     endif()
 
     # optional PACKAGES argument
-    if(VALADOC_PACKAGES)
-        foreach(package ${VALADOC_PACKAGES})
-            list(APPEND pkgArgs "--pkg=${package}")
-        endforeach()
-    endif()
+    foreach(package ${VALADOC_PACKAGES})
+        list(APPEND pkgArgs "--pkg=${package}")
+    endforeach()
+
+    # optional IMPORT_DIRS argument
+    foreach(dir ${VALADOC_IMPORT_DIRS})
+        list(APPEND importDirArgs "--importdir=${dir}")
+    endforeach()
+
+    # optional IMPORTS argument
+    foreach(import ${VALADOC_IMPORTS})
+        list(APPEND importArgs "--import=${import}")
+    endforeach()
 
     add_custom_command(OUTPUT ${outputDir}.stamp
         COMMAND ${CMAKE_COMMAND} -E remove_directory
@@ -97,11 +113,14 @@ function(add_valadoc TARGET)
             ${packageNameArg}
             ${packageVersionArg}
             ${pkgArgs}
+            ${importDirArgs}
+            ${importArgs}
             ${VALADOC_SOURCE_FILES}
         COMMAND ${CMAKE_COMMAND} -E touch
             ${outputDir}.stamp
         DEPENDS
             ${VALADOC_SOURCE_FILES}
+            ${VALADOC_DEPENDS}
         VERBATIM
     )
 
