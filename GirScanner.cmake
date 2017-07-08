@@ -109,8 +109,12 @@ macro(add_gir TARGET SHARED_LIBRARY_TARGET NAMESPACE VERSION)
     )
 
     add_custom_target (${TARGET} ALL DEPENDS ${GIR_FILE_NAME})
-    set_property (TARGET ${TARGET} PROPERTY GIR_FILE_NAME
-        ${CMAKE_CURRENT_BINARY_DIR}/${GIR_FILE_NAME})
+    set_target_properties (${TARGET}
+        PROPERTIES
+            GIR_NAMESPACE ${NAMESPACE}
+            GIR_VERSION ${VERSION}
+            GIR_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/${GIR_FILE_NAME}
+    )
 
     set (${TARGET} ${TARGET})
 endmacro()

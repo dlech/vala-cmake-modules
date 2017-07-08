@@ -42,8 +42,7 @@ find_package_handle_standard_args(ValaDoc DEFAULT_MSG VALADOC_EXE)
 #   [PACKAGES <pkg1> [<pkg2> ...]]
 #   [OUTPUT_DIR <dir>]
 #   [IMPORT_DIRS <dir1> [<dir2> ...]]
-#   [IMPORTS <NAMESPACE-VERSION> [<NAMESPACE-VERSION> ...]]
-#   [DEPENDS <target1> [<target2> ...]]
+#   [IMPORTS <NAMESPACE-VERSION> | <GIRTARGET> [<NAMESPACE-VERSION> | <GIRTARGET> ...]]
 # )
 #
 # <target> is the name of the generated target
@@ -54,14 +53,13 @@ find_package_handle_standard_args(ValaDoc DEFAULT_MSG VALADOC_EXE)
 # OUTPUT_DIR is the location where the generated files will be written. The
 #   default is ${CMAKE_CURRENT_BINARY_DIR}/valadoc
 # IMPORT_DIRS is a list of additional search directories for IMPORTS
-# IMPORTS is a list of repositories to import
-# DEPENDS is a list of additional dependencies, such as a .gir file that is
-#   imported with IMPORTS
+# IMPORTS is a list of repositories to import; it can either be a GIR name in
+#   the form NAMESPACE-VERSION or it can be a GIR target created with add_gir()
 #
 function(add_valadoc TARGET)
     set(optionArgs "")
     set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION)
-    set(multiValueArgs SOURCE_FILES PACKAGES IMPORT_DIRS IMPORTS DEPENDS)
+    set(multiValueArgs SOURCE_FILES PACKAGES IMPORT_DIRS IMPORTS)
     cmake_parse_arguments(VALADOC "${optionArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     # determine the output directory
@@ -94,25 +92,29 @@ function(add_valadoc TARGET)
         list(APPEND pkgArgs "--pkg=${package}")
     endforeach()
 
-    # optional IMPORT_DIRS argument
-    foreach(dir ${VALADOC_IMPORT_DIRS})
-        list(APPEND importDirArgs "--importdir=${dir}")
-    endforeach()
-
     # optional IMPORTS argument
     foreach(import ${VALADOC_IMPORTS})
+        # if any of IMPORTS is a GIR target, we need to also depend on the .gir
+        # file in addition to the target itself and add the directory to the
+        # search path
+        if(TARGET ${import})
+            get_target_property(girFile ${import} GIR_FILE_NAME)
+            list(APPEND importDeps ${import})
+            list(APPEND importDeps ${girFile})
+
+            get_filename_component(girDirectory ${girFile} DIRECTORY)
+            list(APPEND VALADOC_IMPORT_DIRS ${girDirectory})
+
+            get_target_property(girNamespace ${import} GIR_NAMESPACE)
+            get_target_property(girVersion ${import} GIR_VERSION)
+            set(import ${girNamespace}-${girVersion})
+        endif()
         list(APPEND importArgs "--import=${import}")
     endforeach()
 
-    # if any of DEPENDS is a GIR target, we need to also depend on the .gir
-    # file in addition to the target itself
-    foreach(dep ${VALADOC_DEPENDS})
-        if(TARGET ${dep})
-            get_target_property(girFile ${dep} GIR_FILE_NAME)
-            if(NOT girFile STREQUAL "NOTFOUND")
-                list(APPEND girDeps ${girFile})
-            endif()
-        endif()
+    # optional IMPORT_DIRS argument
+    foreach(dir ${VALADOC_IMPORT_DIRS})
+        list(APPEND importDirArgs "--importdir=${dir}")
     endforeach()
 
     add_custom_command(OUTPUT ${outputDir}.stamp
@@ -131,8 +133,7 @@ function(add_valadoc TARGET)
             ${outputDir}.stamp
         DEPENDS
             ${VALADOC_SOURCE_FILES}
-            ${VALADOC_DEPENDS}
-            ${girDeps}
+            ${importDeps}
         VERBATIM
     )
 
