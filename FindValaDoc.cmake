@@ -104,6 +104,17 @@ function(add_valadoc TARGET)
         list(APPEND importArgs "--import=${import}")
     endforeach()
 
+    # if any of DEPENDS is a GIR target, we need to also depend on the .gir
+    # file in addition to the target itself
+    foreach(dep ${VALADOC_DEPENDS})
+        if(TARGET ${dep})
+            get_target_property(girFile ${dep} GIR_FILE_NAME)
+            if(NOT girFile STREQUAL "NOTFOUND")
+                list(APPEND girDeps ${girFile})
+            endif()
+        endif()
+    endforeach()
+
     add_custom_command(OUTPUT ${outputDir}.stamp
         COMMAND ${CMAKE_COMMAND} -E remove_directory
             ${outputDir}
@@ -121,6 +132,7 @@ function(add_valadoc TARGET)
         DEPENDS
             ${VALADOC_SOURCE_FILES}
             ${VALADOC_DEPENDS}
+            ${girDeps}
         VERBATIM
     )
 
