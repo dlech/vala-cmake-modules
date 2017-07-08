@@ -116,6 +116,11 @@ function(vala2c TARGET)
             ${vapiDirArgs}
             ${targetGLibArg}
             ${sourceFiles}
+        # valac does not always touch generated files if there were no changes,
+        # so we have to do that to keep CMake happy, otherwise there will be
+        # dependency problems because OUTPUT is older than DEPENDS
+        COMMAND ${CMAKE_COMMAND} -E touch_nocreate
+            ${outputFiles}
         DEPENDS
             ${VALA2C_SOURCE_FILES}
             ${VALA2C_DEPENDS}
