@@ -42,6 +42,7 @@ string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" VALAC_VERSION ${VALAC_VERSION})
 #   [VAPI_DIRS <dir1> [<dir2> ...]]
 #   [TARGET_GLIB <major>.<minor>]
 #   [OUTPUT_DIR <dir>]
+#   [DEPENDS <file1> [<file2 ...]]
 # )
 #
 # <target> is a variable to hold a list of generated C files.
@@ -51,6 +52,8 @@ string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" VALAC_VERSION ${VALAC_VERSION})
 # TARGET_GLIB is the target glib version.
 # OUTPUT_DIR is the location where the generated files will be written. The
 #   default is ${CMAKE_CURRENT_BINARY_DIR}
+# DEPENDS is a list of additional dependencies (such as a .vapi file that is
+#   used via VAPI_DIRS)
 #
 # The generated C files can then be used with add_library() or add_executable()
 # to generate the usual CMake targets.
@@ -58,7 +61,7 @@ string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" VALAC_VERSION ${VALAC_VERSION})
 function(vala2c TARGET)
     set(optionArgs "")
     set(oneValueArgs VAPI LIBRARY SHARED_LIBRARY OUTPUT_DIR TARGET_GLIB)
-    set(multiValueArgs SOURCE_FILES VAPI_DIRS GIR_DIRS METADATA_DIRS PACKAGES)
+    set(multiValueArgs SOURCE_FILES VAPI_DIRS GIR_DIRS METADATA_DIRS PACKAGES DEPENDS)
     cmake_parse_arguments(VALA2C "${optionArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     # determine the output directory
@@ -115,6 +118,7 @@ function(vala2c TARGET)
             ${sourceFiles}
         DEPENDS
             ${VALA2C_SOURCE_FILES}
+            ${VALA2C_DEPENDS}
         VERBATIM
     )
 
