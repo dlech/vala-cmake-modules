@@ -108,6 +108,8 @@ function(vala2c TARGET)
     endif()
 
     add_custom_command(OUTPUT ${outputFiles}
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+            ${outputDir}
         COMMAND ${VALAC_EXE}
             ${pkgArgs}
             --directory=${outputDir}
