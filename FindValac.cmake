@@ -38,6 +38,7 @@ string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" VALAC_VERSION ${VALAC_VERSION})
 # Usage:
 #
 # vala2c(<target> SOURCE_FILES <file1> [<file2> ...]
+#   [SOURCE_VAPIS <vapi1> [<vapi2> ...]]
 #   [PACKAGES <pkg1> [<pkg2> ...]]
 #   [VAPI_DIRS <dir1> [<dir2> ...]]
 #   [TARGET_GLIB <major>.<minor>]
@@ -47,6 +48,7 @@ string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" VALAC_VERSION ${VALAC_VERSION})
 #
 # <target> is a variable to hold a list of generated C files.
 # SOURCE_FILES is a list of the source (.vala) files.
+# SOURCE_VAPIS is a list of local .vapi files to compile.
 # PACKAGES is a list of vala package dependencies (e.g. glib-2.0).
 # VAPI_DIRS is a list of additional vapi search directories
 # TARGET_GLIB is the target glib version.
@@ -61,7 +63,7 @@ string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" VALAC_VERSION ${VALAC_VERSION})
 function(vala2c TARGET)
     set(optionArgs "")
     set(oneValueArgs VAPI LIBRARY SHARED_LIBRARY OUTPUT_DIR TARGET_GLIB)
-    set(multiValueArgs SOURCE_FILES VAPI_DIRS GIR_DIRS METADATA_DIRS PACKAGES DEPENDS)
+    set(multiValueArgs SOURCE_FILES SOURCE_VAPIS VAPI_DIRS GIR_DIRS METADATA_DIRS PACKAGES DEPENDS)
     cmake_parse_arguments(VALA2C "${optionArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     # determine the output directory
@@ -86,6 +88,13 @@ function(vala2c TARGET)
     else()
         message(FATAL_ERROR "Missing SOURCE_FILES argument for vala2c")
     endif()
+
+    # optional SOURCE_VAPIS argument
+    foreach(vapiFile ${VALA2C_SOURCE_VAPIS})
+        get_filename_component(vapiFile "${vapiFile}" ABSOLUTE)
+        message(${vapiFile})
+        list(APPEND sourceFiles "${vapiFile}")
+    endforeach()
 
     # optional PACKAGES argument
     foreach(package ${VALA2C_PACKAGES})
@@ -125,6 +134,7 @@ function(vala2c TARGET)
             ${outputFiles}
         DEPENDS
             ${VALA2C_SOURCE_FILES}
+            ${VALA2C_SOURCE_VAPIS}
             ${VALA2C_DEPENDS}
         VERBATIM
     )
