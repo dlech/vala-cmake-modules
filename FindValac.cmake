@@ -43,6 +43,7 @@ string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" VALAC_VERSION ${VALAC_VERSION})
 #   [VAPI_DIRS <dir1> [<dir2> ...]]
 #   [TARGET_GLIB <major>.<minor>]
 #   [OUTPUT_DIR <dir>]
+#   [LIBRARY <name-version>]
 #   [DEPENDS <file1> [<file2 ...]]
 # )
 #
@@ -54,6 +55,8 @@ string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" VALAC_VERSION ${VALAC_VERSION})
 # TARGET_GLIB is the target glib version.
 # OUTPUT_DIR is the location where the generated files will be written. The
 #   default is ${CMAKE_CURRENT_BINARY_DIR}
+# LIBRARY tells the compiler that this is a library. It will also result in
+#   outputing a .vapi and .h file
 # DEPENDS is a list of additional dependencies (such as a .vapi file that is
 #   used via VAPI_DIRS)
 #
@@ -111,6 +114,18 @@ function(vala2c TARGET)
         set(targetGLibArg "--target-glib=${VALA2C_TARGET_GLIB}")
     endif()
 
+    # optional LIBRARY argument
+    if(VALA2C_LIBRARY)
+        list(APPEND libraryArgs "--library=${VALA2C_LIBRARY}")
+
+        list(APPEND libraryArgs "--vapi=${VALA2C_LIBRARY}.vapi")
+        list(APPEND libraryArgs "--vapi-comments")
+        list(APPEND outputFiles "${outputDir}/${VALA2C_LIBRARY}.vapi")
+
+        list(APPEND libraryArgs "--header=${VALA2C_LIBRARY}.h")
+        list(APPEND outputFiles "${outputDir}/${VALA2C_LIBRARY}.h")
+    endif()
+
     # debug argument
     if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
         set(debugArg "--debug")
@@ -126,6 +141,7 @@ function(vala2c TARGET)
             ${debugArg}
             ${vapiDirArgs}
             ${targetGLibArg}
+            ${libraryArgs}
             ${sourceFiles}
         # valac does not always touch generated files if there were no changes,
         # so we have to do that to keep CMake happy, otherwise there will be
