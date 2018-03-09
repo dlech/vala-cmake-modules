@@ -43,7 +43,7 @@ string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" VALAC_VERSION ${VALAC_VERSION})
 #   [VAPI_DIRS <dir1> [<dir2> ...]]
 #   [TARGET_GLIB <major>.<minor>]
 #   [OUTPUT_DIR <dir>]
-#   [LIBRARY <name-version>]
+#   [LIBRARY <name-version> [GIR <name>-<version>]]
 #   [DEPENDS <file1> [<file2 ...]]
 # )
 #
@@ -57,6 +57,8 @@ string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" VALAC_VERSION ${VALAC_VERSION})
 #   default is ${CMAKE_CURRENT_BINARY_DIR}
 # LIBRARY tells the compiler that this is a library. It will also result in
 #   outputing a .vapi and .h file
+# GIR tells the compiler to generate a .gir file with the give name. (Name
+#   format is important - use dash between name and version)
 # DEPENDS is a list of additional dependencies (such as a .vapi file that is
 #   used via VAPI_DIRS)
 #
@@ -65,7 +67,7 @@ string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" VALAC_VERSION ${VALAC_VERSION})
 #
 function(vala2c TARGET)
     set(optionArgs "")
-    set(oneValueArgs VAPI LIBRARY SHARED_LIBRARY OUTPUT_DIR TARGET_GLIB)
+    set(oneValueArgs VAPI LIBRARY GIR OUTPUT_DIR TARGET_GLIB)
     set(multiValueArgs SOURCE_FILES SOURCE_VAPIS VAPI_DIRS GIR_DIRS METADATA_DIRS PACKAGES DEPENDS)
     cmake_parse_arguments(VALA2C "${optionArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -124,6 +126,13 @@ function(vala2c TARGET)
 
         list(APPEND libraryArgs "--header=${VALA2C_LIBRARY}.h")
         list(APPEND outputFiles "${outputDir}/${VALA2C_LIBRARY}.h")
+
+        # optional GIR argument
+        if(VALA2C_GIR)
+            list(APPEND girArgs "--gir=${VALA2C_GIR}.gir")
+            list(APPEND girArgs "--shared-library=${outputDir}/${CMAKE_SHARED_LIBRARY_PREFIX}${VALA2C_LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+            list(APPEND outputFiles "--gir=${outputDir}/${VALA2C_GIR}.gir")
+        endif()
     endif()
 
     # debug argument
@@ -142,6 +151,7 @@ function(vala2c TARGET)
             ${vapiDirArgs}
             ${targetGLibArg}
             ${libraryArgs}
+            ${girArgs}
             ${sourceFiles}
         # valac does not always touch generated files if there were no changes,
         # so we have to do that to keep CMake happy, otherwise there will be
