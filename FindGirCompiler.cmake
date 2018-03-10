@@ -54,3 +54,40 @@ include (FindPackageHandleStandardArgs)
 find_package_handle_standard_args (GirCompiler DEFAULT_MSG G_IR_COMPILER_EXECUTABLE)
 
 mark_as_advanced (G_IR_COMPILER_EXECUTABLE)
+
+##
+# add_typelib: CMake wrapper around g-ir-compiler to create .typelib files
+#
+# TARGET
+#   The name of the cmake target. The TYPELIB_FILE property of this target
+#   will be set to the name of the generated file.
+#
+# GIR_TARGET
+#   The name of a target with the GIR_FILE property set to the full path
+#   of a .gir file.
+#
+# ARGS
+#   Additional arguments to pass directly to g-ir-compiler
+##
+
+function(add_typelib TARGET GIR_TARGET)
+    cmake_parse_arguments(ARGS "" "" "ARGS" ${ARGN})
+
+    get_target_property(GIR_FILE ${GIR_TARGET} GIR_FILE)
+    string(REPLACE ".gir" ".typelib" TYPELIB_FILE ${GIR_FILE})
+
+    add_custom_command(OUTPUT ${TYPELIB_FILE}
+        COMMAND ${G_IR_COMPILER_EXECUTABLE}
+        ARGS
+            --output=${TYPELIB_FILE}
+            ${ARGS_ARGS}
+            ${GIR_FILE}
+        DEPENDS
+            ${GIR_TARGET}
+            ${GIR_FILE}
+    )
+
+    add_custom_target(${TARGET} ALL DEPENDS ${TYPELIB_FILE})
+    set_property(TARGET ${TARGET} PROPERTY TYPELIB_FILE
+        ${CMAKE_CURRNET_BINARY_DIR}/${TYPELIB_FILE})
+endfunction()

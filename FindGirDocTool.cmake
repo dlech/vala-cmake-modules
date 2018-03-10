@@ -35,14 +35,19 @@ include (CMakeParseArguments)
 #
 # Usage:
 #
-# add_gir_doc (<target-name> <python|gjs|c> GIR_FILE <file.gir> DESTINATION <directory>)
+# add_gir_doc (<target-name> <python|gjs|c> GIR_TARGET <target> DESTINATION <directory>)
+#
+# <target> is any target with the GIR_FILE property set to the full path of a
+# .gir file.
+# <destination> is directory where documentation files will be created. If the
+# directory exists, it will be deleted and recreated.
 #
 function (add_gir_doc TARGET LANGUAGE)
     set (_one_value_args "GIR_TARGET" "DESTINATION")
     cmake_parse_arguments (GIR_DOC "" "${_one_value_args}" "" "${ARGN}")
 
     if (GIR_DOC_GIR_TARGET)
-        set (_gir_file $<TARGET_PROPERTY:${GIR_DOC_GIR_TARGET},GIR_FILE_NAME>)
+        set (_gir_file $<TARGET_PROPERTY:${GIR_DOC_GIR_TARGET},GIR_FILE>)
     else ()
         message (FATAL_ERROR "Missing GIR_TARGET argument")
     endif ()

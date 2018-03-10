@@ -28,7 +28,7 @@
 # add_gir: CMake wrapper around g-ir-scanner to create .gir files
 #
 # TARGET
-#   Variable to store the name of the cmake target. The GIR_FILE_NAME property
+#   Variable to store the name of the cmake target. The GIR_FILE property
 #   of this target will be set to the name of the generated file.
 #
 # SHARED_LIBRARY_TARGET
@@ -71,7 +71,7 @@
 macro(add_gir TARGET SHARED_LIBRARY_TARGET NAMESPACE VERSION)
     cmake_parse_arguments (ARGS "" "" "INCLUDES;INCLUDE_DIRS;ARGS;FILES" ${ARGN})
 
-    set (GIR_FILE_NAME ${NAMESPACE}-${VERSION}.gir)
+    set(GIR_FILE ${NAMESPACE}-${VERSION}.gir)
 
     set (INCLUDES "")
     foreach (PKG ${ARGS_INCLUDES})
@@ -89,7 +89,7 @@ macro(add_gir TARGET SHARED_LIBRARY_TARGET NAMESPACE VERSION)
         list (APPEND FILES "${ABS_FILE}")
     endforeach ()
 
-    add_custom_command (OUTPUT ${GIR_FILE_NAME}
+    add_custom_command(OUTPUT ${GIR_FILE}
         COMMAND ${G_IR_SCANNER_EXECUTABLE}
         ARGS
             ${INCLUDES}
@@ -99,7 +99,7 @@ macro(add_gir TARGET SHARED_LIBRARY_TARGET NAMESPACE VERSION)
             --namespace=${NAMESPACE}
             --nsversion=${VERSION}
             --no-libtool
-            --output=${GIR_FILE_NAME}
+            --output=${GIR_FILE}
             ${INCLUDE_DIRS}
             ${ARGS_ARGS}
             ${FILES}
@@ -108,12 +108,12 @@ macro(add_gir TARGET SHARED_LIBRARY_TARGET NAMESPACE VERSION)
             ${FILES}
     )
 
-    add_custom_target (${TARGET} ALL DEPENDS ${GIR_FILE_NAME})
+    add_custom_target(${TARGET} ALL DEPENDS ${GIR_FILE})
     set_target_properties (${TARGET}
         PROPERTIES
             GIR_NAMESPACE ${NAMESPACE}
             GIR_VERSION ${VERSION}
-            GIR_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/${GIR_FILE_NAME}
+            GIR_FILE ${CMAKE_CURRENT_BINARY_DIR}/${GIR_FILE}
     )
 
     set (${TARGET} ${TARGET})

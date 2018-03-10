@@ -42,7 +42,7 @@ find_package_handle_standard_args(ValaDoc DEFAULT_MSG VALADOC_EXE)
 #   [PACKAGES <pkg1> [<pkg2> ...]]
 #   [OUTPUT_DIR <dir>]
 #   [IMPORT_DIRS <dir1> [<dir2> ...]]
-#   [IMPORTS <NAMESPACE-VERSION> | <GIRTARGET> [<NAMESPACE-VERSION> | <GIRTARGET> ...]]
+#   [IMPORTS <NAMESPACE-VERSION> | <target> [<NAMESPACE-VERSION> | <target> ...]]
 # )
 #
 # <target> is the name of the generated target
@@ -54,7 +54,8 @@ find_package_handle_standard_args(ValaDoc DEFAULT_MSG VALADOC_EXE)
 #   default is ${CMAKE_CURRENT_BINARY_DIR}/valadoc
 # IMPORT_DIRS is a list of additional search directories for IMPORTS
 # IMPORTS is a list of repositories to import; it can either be a GIR name in
-#   the form NAMESPACE-VERSION or it can be a GIR target created with add_gir()
+#   the form NAMESPACE-VERSION or it can be a target that has the GIR_FILE,
+#   GIR_NAMESPACE and GIR_VERSION properties set.
 #
 function(add_valadoc TARGET)
     set(optionArgs "")
@@ -98,7 +99,7 @@ function(add_valadoc TARGET)
         # file in addition to the target itself and add the directory to the
         # search path
         if(TARGET ${import})
-            get_target_property(girFile ${import} GIR_FILE_NAME)
+            get_target_property(girFile ${import} GIR_FILE)
             list(APPEND importDeps ${import})
             list(APPEND importDeps ${girFile})
 

@@ -47,7 +47,8 @@ string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" VALAC_VERSION ${VALAC_VERSION})
 #   [DEPENDS <file1> [<file2 ...]]
 # )
 #
-# <target> is a variable to hold a list of generated C files.
+# <target> is the name of a target that will be created. The C_FILES property
+# will be set to a list of all of the generated C files.
 # SOURCE_FILES is a list of the source (.vala) files.
 # SOURCE_VAPIS is a list of local .vapi files to compile.
 # PACKAGES is a list of vala package dependencies (e.g. glib-2.0).
@@ -56,9 +57,12 @@ string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" VALAC_VERSION ${VALAC_VERSION})
 # OUTPUT_DIR is the location where the generated files will be written. The
 #   default is ${CMAKE_CURRENT_BINARY_DIR}
 # LIBRARY tells the compiler that this is a library. It will also result in
-#   outputing a .vapi and .h file
+#   outputting a .vapi and .h file. The VAPI_FILE property of <target> will
+#   be set to the full path of the .vapi file. The HEADER_FILE property of
+#   <target> will be set to the full path of the .h file.
 # GIR tells the compiler to generate a .gir file with the give name. (Name
-#   format is important - use dash between name and version)
+#   format is important - use dash between name and version.) The GIR_FILE
+#   property will be set to the path
 # DEPENDS is a list of additional dependencies (such as a .vapi file that is
 #   used via VAPI_DIRS)
 #
@@ -86,6 +90,7 @@ function(vala2c TARGET)
         foreach(sourceFile ${VALA2C_SOURCE_FILES})
             get_filename_component(cFile "${sourceFile}" NAME_WE)
             set(cFile "${outputDir}/${cFile}.c")
+            list(APPEND cFiles "${cFile}")
             list(APPEND outputFiles "${cFile}")
             get_filename_component(sourceFile "${sourceFile}" ABSOLUTE)
             list(APPEND sourceFiles "${sourceFile}")
@@ -122,16 +127,19 @@ function(vala2c TARGET)
 
         list(APPEND libraryArgs "--vapi=${VALA2C_LIBRARY}.vapi")
         list(APPEND libraryArgs "--vapi-comments")
-        list(APPEND outputFiles "${outputDir}/${VALA2C_LIBRARY}.vapi")
+        set(vapiFile "${outputDir}/${VALA2C_LIBRARY}.vapi")
+        list(APPEND outputFiles "${vapiFile}")
 
         list(APPEND libraryArgs "--header=${VALA2C_LIBRARY}.h")
-        list(APPEND outputFiles "${outputDir}/${VALA2C_LIBRARY}.h")
+        set(headerFile "${outputDir}/${VALA2C_LIBRARY}.h")
+        list(APPEND outputFiles "${headerFile}")
 
         # optional GIR argument
         if(VALA2C_GIR)
             list(APPEND girArgs "--gir=${VALA2C_GIR}.gir")
             list(APPEND girArgs "--shared-library=${outputDir}/${CMAKE_SHARED_LIBRARY_PREFIX}${VALA2C_LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}")
-            list(APPEND outputFiles "--gir=${outputDir}/${VALA2C_GIR}.gir")
+            set(girFile "${outputDir}/${VALA2C_GIR}.gir")
+            list(APPEND outputFiles "--gir=${girFile}")
         endif()
     endif()
 
@@ -165,6 +173,11 @@ function(vala2c TARGET)
         VERBATIM
     )
 
-    set(${TARGET} ${outputFiles} PARENT_SCOPE)
-
+    add_custom_target(${TARGET} DEPENDS ${outputFiles})
+    set_target_properties(${TARGET} PROPERTIES
+        C_FILES "${cFiles}"
+        HEADER_FILE "${headerFile}"
+        VAPI_FILE "${vapiFile}"
+        GIR_FILE "${girFile}"
+    )
 endfunction()
