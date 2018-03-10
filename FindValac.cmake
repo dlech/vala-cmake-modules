@@ -137,7 +137,12 @@ function(vala2c TARGET)
         # optional GIR argument
         if(VALA2C_GIR)
             list(APPEND girArgs "--gir=${VALA2C_GIR}.gir")
-            list(APPEND girArgs "--shared-library=${outputDir}/${CMAKE_SHARED_LIBRARY_PREFIX}${VALA2C_LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+            set(sharedLibrary "${CMAKE_SHARED_LIBRARY_PREFIX}${VALA2C_LIBRARY}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+            if(APPLE)
+                # macOS needs the full path in the .gir
+                set(sharedLibrary "${outputDir}/${sharedLibrary}")
+            endif()
+            list(APPEND girArgs "--shared-library=${sharedLibrary}")
             set(girFile "${outputDir}/${VALA2C_GIR}.gir")
             list(APPEND outputFiles "--gir=${girFile}")
         endif()
@@ -180,4 +185,10 @@ function(vala2c TARGET)
         VAPI_FILE "${vapiFile}"
         GIR_FILE "${girFile}"
     )
+endfunction()
+
+function(install_vapi TARGET)
+    cmake_parse_arguments(ARGS "" "DESTINATION" "" ${ARGN})
+
+    install(FILES $<TARGET_PROPERTY:${TARGET},VAPI_FILE> DESTINATION ${ARGS_DESTINATION}/vala/vapi)
 endfunction()

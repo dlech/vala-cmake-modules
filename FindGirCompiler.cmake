@@ -1,61 +1,35 @@
-##
-# Copyright 2009-2010 Jakob Westhoff. All rights reserved.
-# 
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-# 
-#    1. Redistributions of source code must retain the above copyright notice,
-#       this list of conditions and the following disclaimer.
-# 
-#    2. Redistributions in binary form must reproduce the above copyright notice,
-#       this list of conditions and the following disclaimer in the documentation
-#       and/or other materials provided with the distribution.
-# 
-# THIS SOFTWARE IS PROVIDED BY JAKOB WESTHOFF ``AS IS'' AND ANY EXPRESS OR
-# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
-# EVENT SHALL JAKOB WESTHOFF OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-# PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-# LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
-# OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
-# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-# 
-# The views and conclusions contained in the software and documentation are those
-# of the authors and should not be interpreted as representing official policies,
-# either expressed or implied, of Jakob Westhoff
-##
+################################################################################
+# FindGirCompiler.cmake
+################################################################################
 
-##
-# Find module for the Gir compiler (g-ir-compiler)
+# MIT License
 #
-# This module determines wheter a Gir compiler is installed on the current
-# system and where its executable is.
+# Copyright (c) 2018 David Lechner <david@lechnology.com>
 #
-# Call the module using "find_package(GirCompiler) from within your CMakeLists.txt.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-# The following variables will be set after an invocation:
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
 #
-#  G_IR_COMPILER_FOUND       Whether the g-ir-compiler compiler has been found or not
-#  G_IR_COMPILER_EXECUTABLE  Full path to the g-ir-compiler executable if it has been found
-##
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
+find_program(G_IR_COMPILER_EXE NAMES g-ir-compiler)
+mark_as_advanced (G_IR_COMPILER_EXE)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(GirCompiler DEFAULT_MSG G_IR_COMPILER_EXE)
 
-# Search for the g-ir-compiler executable in the usual system paths.
-find_program (G_IR_COMPILER_EXECUTABLE
-  NAMES g-ir-compiler)
-
-# Handle the QUIETLY and REQUIRED arguments, which may be given to the find call.
-# Furthermore set G_IR_COMPILER_FOUND to TRUE if the g-ir-compiler has been found (aka.
-# G_IR_COMPILER_EXECUTABLE is set)
-
-include (FindPackageHandleStandardArgs)
-find_package_handle_standard_args (GirCompiler DEFAULT_MSG G_IR_COMPILER_EXECUTABLE)
-
-mark_as_advanced (G_IR_COMPILER_EXECUTABLE)
-
-##
+#
 # add_typelib: CMake wrapper around g-ir-compiler to create .typelib files
 #
 # TARGET
@@ -68,8 +42,7 @@ mark_as_advanced (G_IR_COMPILER_EXECUTABLE)
 #
 # ARGS
 #   Additional arguments to pass directly to g-ir-compiler
-##
-
+#
 function(add_typelib TARGET GIR_TARGET)
     cmake_parse_arguments(ARGS "" "" "ARGS" ${ARGN})
 
@@ -77,7 +50,7 @@ function(add_typelib TARGET GIR_TARGET)
     string(REPLACE ".gir" ".typelib" TYPELIB_FILE ${GIR_FILE})
 
     add_custom_command(OUTPUT ${TYPELIB_FILE}
-        COMMAND ${G_IR_COMPILER_EXECUTABLE}
+        COMMAND ${G_IR_COMPILER_EXE}
         ARGS
             --output=${TYPELIB_FILE}
             ${ARGS_ARGS}
@@ -90,4 +63,28 @@ function(add_typelib TARGET GIR_TARGET)
     add_custom_target(${TARGET} ALL DEPENDS ${TYPELIB_FILE})
     set_property(TARGET ${TARGET} PROPERTY TYPELIB_FILE
         ${CMAKE_CURRNET_BINARY_DIR}/${TYPELIB_FILE})
+endfunction()
+
+#
+# Installs a typelib given by TARGET
+#
+# Usage:
+#   install_typelib(<target> DESTINATION <destination>)
+#
+# <target> is any target with the TYPELIB_FILE property set to the path of a .typelib file
+# <destination> is the system data directory, e.g. CMAKE_INSTALL_LIBDIR
+#
+function(install_typelib TARGET)
+    cmake_parse_arguments(ARGS "" "DESTINATION" "" ${ARGN})
+    if(APPLE)
+        # have to regenerate .typelib file to get the shared library name correct
+        # TODO: find a less fragile way to get girDir or perhaps use the --shared-library argument to g-ir-compiler
+        set(girDir "\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/share/gir-1.0")
+        set(girFile "${girDir}/${GIR_NAME}-${GIR_VERSION}.gir")
+        set(typelibDir "\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${ARGS_DESTINATION}/girepository-1.0")
+        set(typelibFile "${typelibDir}/${GIR_NAME}-${GIR_VERSION}.typelib")
+        install(CODE "message(\"-- Installing: ${typelibFile}\")\n  file(MAKE_DIRECTORY \"${typelibDir}\")\n  execute_process(COMMAND ${G_IR_COMPILER_EXE} \"--output=${typelibFile}\" \"${girFile}\")")
+    else (APPLE)
+        install(FILES $<TARGET_PROPERTY:${TARGET},TYPELIB_FILE> DESTINATION ${ARGS_DESTINATION}/girepository-1.0)
+    endif(APPLE)
 endfunction()
