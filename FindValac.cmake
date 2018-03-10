@@ -144,7 +144,7 @@ function(vala2c TARGET)
             endif()
             list(APPEND girArgs "--shared-library=${sharedLibrary}")
             set(girFile "${outputDir}/${VALA2C_GIR}.gir")
-            list(APPEND outputFiles "--gir=${girFile}")
+            list(APPEND outputFiles "${girFile}")
         endif()
     endif()
 
