@@ -293,13 +293,14 @@ function(gtk_doc_add_module _doc_prefix)
             ${_output_args}
         DEPENDS
             ${_output_types}
-        COMMAND ${GTKDOC_SCANGOBJ_EXE}
+        COMMAND ${CMAKE_COMMAND} -E env
+            "LD_LIBRARY_PATH=${_ldpath}"
+            ${GTKDOC_SCANGOBJ_EXE}
             "--module=${_doc_prefix}"
             "--types=${_output_types}"
             "--output-dir=${_output_dir}"
             "--cflags=${_cflags}"
             "--ldflags=${_ldflags}"
-            "--run=LD_LIBRARY_PATH=${_ldpath}"
         COMMAND
             ${CMAKE_COMMAND} -E touch ${_output_scangobj_stamp}
         WORKING_DIRECTORY "${_output_dir}"
