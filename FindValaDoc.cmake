@@ -122,7 +122,6 @@ function(add_valadoc TARGET)
         COMMAND ${CMAKE_COMMAND} -E remove_directory
             ${outputDir}
         COMMAND ${VALADOC_EXE}
-            --driver=${VALAC_VERSION}
             --directory=${outputDir}
             ${packageNameArg}
             ${packageVersionArg}
